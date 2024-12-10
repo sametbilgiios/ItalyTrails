@@ -8,6 +8,21 @@
 import SwiftUI
 import SwiftData
 
+struct PlaceRowView: View {
+    let place: Place
+    
+    var body: some View {
+        VStack(alignment: .leading) {
+            Text(place.name)
+                .font(.headline)
+            Text(place.visitDate, format: Date.FormatStyle(date: .numeric, time: .omitted))
+                .font(.subheadline)
+                .foregroundColor(.secondary)
+        }
+        .transition(.slide)
+    }
+}
+
 struct PlacesView: View {
     
     @Environment(\.modelContext) private var modelContext
@@ -17,20 +32,13 @@ struct PlacesView: View {
         NavigationSplitView {
             List {
                 ForEach(places) { place in
-                    NavigationLink {
-                        PlaceDetailView(place: place)
-                    } label: {
-                        VStack(alignment: .leading) {
-                            Text(place.name)
-                                .font(.headline)
-                            Text(place.visitDate, format: Date.FormatStyle(date: .numeric, time: .omitted))
-                                .font(.subheadline)
-                                .foregroundColor(.secondary)
-                        }
+                    NavigationLink(destination: PlaceDetailView(place: place)) {
+                        PlaceRowView(place: place)
                     }
                 }
                 .onDelete(perform: deletePlaces)
             }
+            .animation(.easeInOut(duration: 0.5), value: places)
             .toolbar {
                 ToolbarItem(placement: .principal) {
                     VStack {
@@ -50,14 +58,14 @@ struct PlacesView: View {
     }
     
     private func addPlace() {
-        withAnimation {
+        withAnimation(.easeInOut(duration: 0.5)) {
             let newPlace = Place(name: "New Place", visitDate: Date())
             modelContext.insert(newPlace)
         }
     }
     
     private func deletePlaces(offsets: IndexSet) {
-        withAnimation {
+        withAnimation(.easeInOut(duration: 0.5)) {
             for index in offsets {
                 modelContext.delete(places[index])
             }

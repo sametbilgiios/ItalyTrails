@@ -10,7 +10,17 @@ import SwiftData
 
 struct PlaceDetailView: View {
     
+    @Environment(\.dismiss) private var dismiss
+    
     @Bindable var place: Place
+    
+    @State private var tempPlace: Place
+    @State private var isShowingAlert = false
+    
+    init(place: Place) {
+        self.place = place
+        _tempPlace = State(initialValue: Place(name: place.name, desc: place.desc, visitDate: place.visitDate, category: place.category, imageData: place.imageData))
+    }
     
     var body: some View {
         Form {
@@ -34,5 +44,48 @@ struct PlaceDetailView: View {
             }
         }
         .navigationTitle(place.name)
+        .navigationBarBackButtonHidden(true)
+        .toolbar {
+            ToolbarItem(placement: .navigationBarLeading) {
+                Button(action: {
+                    handleBackButton()
+                }) {
+                    Image(systemName: "chevron.left")
+                }
+            }
+        }
+        .alert("You have unsaved changes. Do you want to save them?", isPresented: $isShowingAlert, actions: {
+            Button("Discard Changes", role: .destructive, action: {
+                discardChanges()
+                dismiss()
+            })
+            Button("Save Changes", role: .cancel, action: {
+                dismiss()
+            })
+        })
+    }
+    
+    private func handleBackButton() {
+        if hasUnsavedChanges() {
+            isShowingAlert = true
+        } else {
+            dismiss()
+        }
+    }
+    
+    private func hasUnsavedChanges() -> Bool {
+        return place.name != tempPlace.name ||
+        place.desc != tempPlace.desc ||
+        place.visitDate != tempPlace.visitDate ||
+        place.category != tempPlace.category ||
+        place.imageData != tempPlace.imageData
+    }
+    
+    private func discardChanges() {
+        place.name = tempPlace.name
+        place.desc = tempPlace.desc
+        place.visitDate = tempPlace.visitDate
+        place.category = tempPlace.category
+        place.imageData = tempPlace.imageData
     }
 }
